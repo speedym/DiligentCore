@@ -39,7 +39,10 @@ class VulkanPhysicalDevice
 public:
     struct ExtensionFeatures
     {
+        bool IsVkKHR16BitStorageEnabled() const;
+
         VkPhysicalDeviceMeshShaderFeaturesNV MeshShader = {};
+        VkPhysicalDevice16BitStorageFeaturesKHR Shaders16BitStorageFeats = {};
     };
 
 public:

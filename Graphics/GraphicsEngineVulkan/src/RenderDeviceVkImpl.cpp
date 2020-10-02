@@ -245,8 +245,19 @@ RenderDeviceVkImpl::RenderDeviceVkImpl(IReferenceCounters*                      
     // All devices that support mesh shaders also support task shaders, so it is not necessary to use two separate features.
     Features.MeshShaders = GetFeatureState(EngineCI.Features.MeshShaders != DEVICE_FEATURE_STATE_DISABLED && vkExtFeatures.MeshShader.meshShader != VK_FALSE && vkExtFeatures.MeshShader.taskShader != VK_FALSE);
 
+    if (EngineCI.Features.Shaders16BitStorage != DEVICE_FEATURE_STATE_DISABLED && vkExtFeatures.IsVkKHR16BitStorageEnabled())
+    {
+        Features.Shaders16BitStorage         = DEVICE_FEATURE_STATE_ENABLED;
+        Features.Shaders16BitStorageFeats = {
+            vkExtFeatures.Shaders16BitStorageFeats.storageBuffer16BitAccess?True:False,
+            vkExtFeatures.Shaders16BitStorageFeats.uniformAndStorageBuffer16BitAccess?True:False,
+            vkExtFeatures.Shaders16BitStorageFeats.storagePushConstant16?True:False,
+            vkExtFeatures.Shaders16BitStorageFeats.storageInputOutput16?True:False
+        };
+    }
+
 #if defined(_MSC_VER) && defined(_WIN64)
-    static_assert(sizeof(DeviceFeatures) == 23, "Did you add a new feature to DeviceFeatures? Please handle its satus here.");
+    static_assert(sizeof(DeviceFeatures) == 24, "Did you add a new feature to DeviceFeatures? Please handle its satus here.");
 #endif
 
     const auto& vkDeviceLimits = m_PhysicalDevice->GetProperties().limits;

@@ -231,8 +231,9 @@ void EngineFactoryVkImpl::CreateDeviceAndContextsVk(const EngineVkCreateInfo& _E
         const auto SupportsFeatures2 = Instance->IsExtensionEnabled(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
         // Enable mesh shader extension.
-        bool                                 MeshShadersSupported = false;
-        VkPhysicalDeviceMeshShaderFeaturesNV MeshShaderFeats      = {};
+        bool                                    MeshShadersSupported        = false;
+        VkPhysicalDeviceMeshShaderFeaturesNV    MeshShaderFeats             = {};
+        VkPhysicalDevice16BitStorageFeaturesKHR Shaders16BitStorageFeats  = {};
         if (SupportsFeatures2)
         {
             void** NextExt = const_cast<void**>(&DeviceCreateInfo.pNext);
@@ -247,6 +248,21 @@ void EngineFactoryVkImpl::CreateDeviceAndContextsVk(const EngineVkCreateInfo& _E
                     NextExt  = &MeshShaderFeats.pNext;
                 }
             }
+            if (EngineCI.Features.Shaders16BitStorage != DEVICE_FEATURE_STATE_DISABLED)
+            {
+                if (PhysicalDevice->IsExtensionSupported(VK_KHR_16BIT_STORAGE_EXTENSION_NAME))
+                {
+                    DeviceExtensions.push_back(VK_KHR_16BIT_STORAGE_EXTENSION_NAME);
+                    Shaders16BitStorageFeats = PhysicalDevice->GetExtFeatures().Shaders16BitStorageFeats;
+                    *NextExt = &Shaders16BitStorageFeats;
+                    NextExt  = &Shaders16BitStorageFeats.pNext;
+                }
+                else
+                {
+                    if (EngineCI.Features.Shaders16BitStorage == DEVICE_FEATURE_STATE_ENABLED)
+                        LOG_ERROR_AND_THROW("16bit shader storage is not supported by this device");
+                }
+            }
             *NextExt = nullptr;
         }
 
@@ -256,7 +272,7 @@ void EngineFactoryVkImpl::CreateDeviceAndContextsVk(const EngineVkCreateInfo& _E
             // The actual state of Features.MeshShaders in device caps is set by RenderDeviceVkImpl
 
 #if defined(_MSC_VER) && defined(_WIN64)
-        static_assert(sizeof(DeviceFeatures) == 23, "Did you add a new feature to DeviceFeatures? Please handle its satus here.");
+        static_assert(sizeof(DeviceFeatures) == 24, "Did you add a new feature to DeviceFeatures? Please handle its satus here.");
 #endif
 
         DeviceCreateInfo.ppEnabledExtensionNames = DeviceExtensions.empty() ? nullptr : DeviceExtensions.data();

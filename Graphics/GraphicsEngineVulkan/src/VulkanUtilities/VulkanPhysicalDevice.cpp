@@ -33,6 +33,14 @@
 namespace VulkanUtilities
 {
 
+bool VulkanPhysicalDevice::ExtensionFeatures::IsVkKHR16BitStorageEnabled() const
+{
+    return Shaders16BitStorageFeats.storageBuffer16BitAccess != VK_FALSE ||
+        Shaders16BitStorageFeats.uniformAndStorageBuffer16BitAccess != VK_FALSE ||
+        Shaders16BitStorageFeats.storageInputOutput16 != VK_FALSE ||
+        Shaders16BitStorageFeats.storagePushConstant16 != VK_FALSE;
+}
+
 std::unique_ptr<VulkanPhysicalDevice> VulkanPhysicalDevice::Create(VkPhysicalDevice      vkDevice,
                                                                    const VulkanInstance& Instance)
 {
@@ -82,6 +90,13 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice      vkDevice,
             *NextFeat                      = &m_ExtFeatures.MeshShader;
             NextFeat                       = &m_ExtFeatures.MeshShader.pNext;
             m_ExtFeatures.MeshShader.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MESH_SHADER_FEATURES_NV;
+        }
+
+        if (IsExtensionSupported(VK_KHR_16BIT_STORAGE_EXTENSION_NAME))
+        {
+            *NextFeat                      = &m_ExtFeatures.Shaders16BitStorageFeats;
+            NextFeat                       = &m_ExtFeatures.Shaders16BitStorageFeats.pNext;
+            m_ExtFeatures.Shaders16BitStorageFeats.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR;
         }
 
         *NextFeat = nullptr;

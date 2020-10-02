@@ -1508,6 +1508,23 @@ DILIGENT_TYPED_ENUM(DEVICE_FEATURE_STATE, Uint8)
     DEVICE_FEATURE_STATE_OPTIONAL = 2
 };
 
+struct Shaders16BitStorageFeatures
+{
+    /// Indicates if SSBOs can have 16 bit ints and 16 bit floats as members
+    Bool           StorageBuffer16BitAccess         DEFAULT_INITIALIZER(0);
+
+    /// Superset of the above variable. Indicates if SSBOs _AND_ UBOs can have
+    /// 16 bit ints and floats as members
+    Bool           UniformAndStorageBuffer16BitAccess         DEFAULT_INITIALIZER(0);
+
+    /// Indicates if push constants can have 16 bit ints and floats as members
+    Bool           StoragePushConstant16          DEFAULT_INITIALIZER(0);
+
+    /// Indicates if input and output storage classes can have 16 bit ints and floats
+    /// as members
+    Bool           StorageInputOutput16          DEFAULT_INITIALIZER(0);
+};
+typedef struct Shaders16BitStorageFeatures Shaders16BitStorageFeatures;
 
 /// Describes the device features
 struct DeviceFeatures
@@ -1583,6 +1600,12 @@ struct DeviceFeatures
     /// Specifies whether all the extended UAV texture formats are available in shader code.
     DEVICE_FEATURE_STATE TextureUAVExtendedFormats         DEFAULT_INITIALIZER(DEVICE_FEATURE_STATE_DISABLED);
 
+    /// Specifies if 16bit storage should be enabled for shaders.
+    DEVICE_FEATURE_STATE Shaders16BitStorage          DEFAULT_INITIALIZER(DEVICE_FEATURE_STATE_DISABLED);
+
+    /// Finegrained information regarding which storage classes support 16 bit float and integers.
+    Shaders16BitStorageFeatures Shaders16BitStorageFeats;
+
 #if DILIGENT_CPP_INTERFACE
     DeviceFeatures() noexcept {}
 
@@ -1609,10 +1632,11 @@ struct DeviceFeatures
         TextureCompressionBC              {State},
         VertexPipelineUAVWritesAndAtomics {State},
         PixelUAVWritesAndAtomics          {State},
-        TextureUAVExtendedFormats         {State}
+        TextureUAVExtendedFormats         {State},
+        Shaders16BitStorage               {State}
     {
 #   if defined(_MSC_VER) && defined(_WIN64)
-        static_assert(sizeof(*this) == 23, "Did you add a new feature to DeviceFeatures? Please handle its satus above.");
+        static_assert(sizeof(*this) == 24, "Did you add a new feature to DeviceFeatures? Please handle its satus above.");
 #   endif
     }
 #endif
