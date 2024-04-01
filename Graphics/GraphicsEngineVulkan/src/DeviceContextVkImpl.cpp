@@ -2039,7 +2039,21 @@ void DeviceContextVkImpl::UpdateBuffer(IBuffer*                       pBuffer,
     // Source buffer offset must be multiple of 4 (18.4)
     auto TmpSpace = m_UploadHeap.Allocate(Size, Alignment);
     memcpy(TmpSpace.CPUAddress, pData, StaticCast<size_t>(Size));
+
+#define POWER_VR_DRIVER_BUG_WORKAROUND
+#ifdef POWER_VR_DRIVER_BUG_WORKAROUND
+    constexpr Diligent::Uint64 k_power_vr_max_buffer_transfer_limit_bytes = 32768;
+    Diligent::Uint64           cur_offset                                 = 0;
+    while (cur_offset < Size)
+    {
+        Diligent::Uint64 remaining_size = Size - cur_offset;
+        Diligent::Uint64 cur_size       = std::min(k_power_vr_max_buffer_transfer_limit_bytes, remaining_size);
+        UpdateBufferRegion(pBuffVk, Offset + cur_offset, cur_size, TmpSpace.vkBuffer, TmpSpace.AlignedOffset + cur_offset, StateTransitionMode);
+        cur_offset += cur_size;
+    }
+#else
     UpdateBufferRegion(pBuffVk, Offset, Size, TmpSpace.vkBuffer, TmpSpace.AlignedOffset, StateTransitionMode);
+#endif
     // The allocation will stay in the upload heap until the end of the frame at which point all upload
     // pages will be discarded
 }
