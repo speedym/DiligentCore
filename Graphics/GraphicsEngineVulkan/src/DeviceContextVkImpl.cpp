@@ -2047,9 +2047,9 @@ void DeviceContextVkImpl::UpdateBuffer(IBuffer*                       pBuffer,
     while (cur_offset < Size)
     {
         Diligent::Uint64 remaining_size = Size - cur_offset;
-        Diligent::Uint64 cur_size       = std::min((int)k_power_vr_max_buffer_transfer_limit_bytes, (int)remaining_size);
+        Diligent::Uint64 cur_size       = std::min(k_power_vr_max_buffer_transfer_limit_bytes, remaining_size);
         UpdateBufferRegion(pBuffVk, Offset + cur_offset, cur_size, TmpSpace.vkBuffer, TmpSpace.AlignedOffset + cur_offset, StateTransitionMode);
-        cur_offset += k_power_vr_max_buffer_transfer_limit_bytes;
+        cur_offset += cur_size;
     }
 #else
     UpdateBufferRegion(pBuffVk, Offset, Size, TmpSpace.vkBuffer, TmpSpace.AlignedOffset, StateTransitionMode);
