@@ -836,15 +836,71 @@ void DeviceContextVkImpl::Draw(const DrawAttribs& Attribs)
     }
 }
 
+int  counter = 0;
 void DeviceContextVkImpl::DrawIndexed(const DrawIndexedAttribs& Attribs)
 {
     DvpVerifyDrawIndexedArguments(Attribs);
 
+    if (Attribs.NumIndices != 17445)
+        return;
+
     PrepareForIndexedDraw(Attribs.Flags, Attribs.IndexType);
+
+    if (m_pIndexBuffer->GetDesc().Usage == USAGE_UNIFIED && counter == 100)
+    {
+        void* buf;
+        MapBuffer(m_pIndexBuffer, MAP_READ, MAP_FLAG_NO_OVERWRITE | MAP_FLAG_DO_NOT_WAIT, buf);
+
+        size_t index_hash = std::hash<std::string_view>{}({(const char*)buf + 0,
+                                                           81420});
+        LOG_INFO_MESSAGE("Index buffer 1 hash: ", index_hash);
+        size_t index_hash2 = std::hash<std::string_view>{}({(const char*)buf + 81420,
+                                                            69780});
+        LOG_INFO_MESSAGE("Index buffer 2 hash: ", index_hash2);
+
+        // unsigned char* p = (unsigned char*)buf + 81420;
+        // std::string tmps = "\n";
+        // for (int i = 0; i < 69780; i+=8) {
+        //     char tmp1[200];
+        //     sprintf(tmp1, "%i %02x %02x %02x %02x %02x %02x %02x %02x\n", i/8, p[i + 0], p[i + 1],
+        //             p[i + 2], p[i + 3], p[i + 4], p[i + 5], p[i + 6], p[i + 7]);
+        //     tmps += tmp1;
+        // }
+        // LOG_INFO_MESSAGE(tmps);
+
+        unsigned char* p    = (unsigned char*)buf + 0;
+        std::string    tmps = "\n";
+        for (int i = 8673 * 8; i < 81420; i += 8)
+        {
+            char tmp1[200];
+            sprintf(tmp1, "%i %02x %02x %02x %02x %02x %02x %02x %02x\n", i / 8, p[i + 0], p[i + 1],
+                    p[i + 2], p[i + 3], p[i + 4], p[i + 5], p[i + 6], p[i + 7]);
+            tmps += tmp1;
+        }
+        LOG_INFO_MESSAGE(tmps);
+
+        //        unsigned char* p    = (unsigned char*)buf + 0;
+        //        std::string    tmps = "\n";
+        //        for (int i = 0; i < 81420 + 69780; i += 8)
+        //        {
+        //            if ((p[i + 0] == 0x86 && p[i + 1] == 0x00) || (p[i + 4] == 0x86 && p[i + 5] == 0x00))
+        //            {
+        //                char tmp1[200];
+        //                sprintf(tmp1, "%i %02x %02x %02x %02x %02x %02x %02x %02x FOUND\n", i / 8, p[i + 0], p[i + 1],
+        //                        p[i + 2], p[i + 3], p[i + 4], p[i + 5], p[i + 6], p[i + 7]);
+        //                tmps += tmp1;
+        //            }
+        //        }
+        //        LOG_INFO_MESSAGE(tmps);
+
+        UnmapBuffer(m_pIndexBuffer, MAP_READ);
+    }
+    counter++;
 
     if (Attribs.NumIndices > 0 && Attribs.NumInstances > 0)
     {
         m_CommandBuffer.DrawIndexed(Attribs.NumIndices, Attribs.NumInstances, Attribs.FirstIndexLocation, Attribs.BaseVertex, Attribs.FirstInstanceLocation);
+        //m_CommandBuffer.DrawIndexed(37800, 1, 0, 0, 0);
         ++m_State.NumCommands;
     }
 }
@@ -857,8 +913,8 @@ void DeviceContextVkImpl::DrawIndirect(const DrawIndirectAttribs& Attribs)
     // be performed outside of render pass, and PrepareForDraw commits render pass
     BufferVkImpl* pIndirectDrawAttribsVk = PrepareIndirectAttribsBuffer(Attribs.pAttribsBuffer, Attribs.AttribsBufferStateTransitionMode, "Indirect draw (DeviceContextVkImpl::DrawIndirect)");
     BufferVkImpl* pCountBufferVk         = Attribs.pCounterBuffer != nullptr ?
-        PrepareIndirectAttribsBuffer(Attribs.pCounterBuffer, Attribs.CounterBufferStateTransitionMode, "Count buffer (DeviceContextVkImpl::DrawIndirect)") :
-        nullptr;
+                PrepareIndirectAttribsBuffer(Attribs.pCounterBuffer, Attribs.CounterBufferStateTransitionMode, "Count buffer (DeviceContextVkImpl::DrawIndirect)") :
+                nullptr;
 
     PrepareForDraw(Attribs.Flags);
 
@@ -892,8 +948,8 @@ void DeviceContextVkImpl::DrawIndexedIndirect(const DrawIndexedIndirectAttribs& 
     // be performed outside of render pass, and PrepareForDraw commits render pass
     BufferVkImpl* pIndirectDrawAttribsVk = PrepareIndirectAttribsBuffer(Attribs.pAttribsBuffer, Attribs.AttribsBufferStateTransitionMode, "Indirect draw (DeviceContextVkImpl::DrawIndexedIndirect)");
     BufferVkImpl* pCountBufferVk         = Attribs.pCounterBuffer != nullptr ?
-        PrepareIndirectAttribsBuffer(Attribs.pCounterBuffer, Attribs.CounterBufferStateTransitionMode, "Count buffer (DeviceContextVkImpl::DrawIndexedIndirect)") :
-        nullptr;
+                PrepareIndirectAttribsBuffer(Attribs.pCounterBuffer, Attribs.CounterBufferStateTransitionMode, "Count buffer (DeviceContextVkImpl::DrawIndexedIndirect)") :
+                nullptr;
 
     PrepareForIndexedDraw(Attribs.Flags, Attribs.IndexType);
 
@@ -940,8 +996,8 @@ void DeviceContextVkImpl::DrawMeshIndirect(const DrawMeshIndirectAttribs& Attrib
     // be performed outside of render pass, and PrepareForDraw commits render pass
     BufferVkImpl* pIndirectDrawAttribsVk = PrepareIndirectAttribsBuffer(Attribs.pAttribsBuffer, Attribs.AttribsBufferStateTransitionMode, "Indirect draw (DeviceContextVkImpl::DrawMeshIndirect)");
     BufferVkImpl* pCountBufferVk         = Attribs.pCounterBuffer != nullptr ?
-        PrepareIndirectAttribsBuffer(Attribs.pCounterBuffer, Attribs.CounterBufferStateTransitionMode, "Counter buffer (DeviceContextVkImpl::DrawMeshIndirect)") :
-        nullptr;
+                PrepareIndirectAttribsBuffer(Attribs.pCounterBuffer, Attribs.CounterBufferStateTransitionMode, "Counter buffer (DeviceContextVkImpl::DrawMeshIndirect)") :
+                nullptr;
 
     PrepareForDraw(Attribs.Flags);
 
@@ -1307,7 +1363,7 @@ void DeviceContextVkImpl::FinishFrame()
     // Upload heap returns all allocated pages to the global memory manager.
     // Note: as global memory manager is hosted by the render device, the upload heap can be destroyed
     // before the pages are actually returned to the manager.
-    m_UploadHeap.ReleaseAllocatedPages(QueueMask);
+    //m_UploadHeap.ReleaseAllocatedPages(QueueMask);
 
     // Dynamic heap returns all allocated master blocks to the global dynamic memory manager.
     // Note: as global dynamic memory manager is hosted by the render device, the dynamic heap can
@@ -1642,7 +1698,7 @@ void DeviceContextVkImpl::CommitScissorRects()
     VERIFY(m_pPipelineState && m_pPipelineState->GetGraphicsPipelineDesc().RasterizerDesc.ScissorEnable, "Scissor test must be enabled in the graphics pipeline");
 
     if (m_NumScissorRects == 0)
-        return; // Scissors have not been set in the context yet
+        return;                             // Scissors have not been set in the context yet
 
     VkRect2D VkScissorRects[MAX_VIEWPORTS]; // Do not waste time initializing array with zeroes
     for (Uint32 sr = 0; sr < m_NumScissorRects; ++sr)
@@ -1936,19 +1992,52 @@ void DeviceContextVkImpl::UpdateBuffer(IBuffer*                       pBuffer,
                                        const void*                    pData,
                                        RESOURCE_STATE_TRANSITION_MODE StateTransitionMode)
 {
+    //    if (Size == 69780)
+    //    {
+    //        int32_t* indices = (int32_t*)(pData);
+    //        for (Uint64 k = 0; k < Size / 4; k++)
+    //        {
+    //            indices[k] += 3509;
+    //        }
+    //    }
+
+    // if (pBuffer->GetDesc().Usage == USAGE_UNIFIED)
+    // {
+    //     void* buf;
+    //     MapBuffer(pBuffer, MAP_WRITE, MAP_FLAG_NO_OVERWRITE | MAP_FLAG_DO_NOT_WAIT, buf);
+    //     memcpy((void*)((uint8_t*)buf + Offset), pData, StaticCast<size_t>(Size));
+    //     UnmapBuffer(pBuffer, MAP_WRITE);
+    //     return;
+    // }
+
     TDeviceContextBase::UpdateBuffer(pBuffer, Offset, Size, pData, StateTransitionMode);
 
     // We must use cmd context from the device context provided, otherwise there will
     // be resource barrier issues in the cmd list in the device context
     auto* pBuffVk = ClassPtrCast<BufferVkImpl>(pBuffer);
-
     DEV_CHECK_ERR(pBuffVk->GetDesc().Usage != USAGE_DYNAMIC, "Dynamic buffers must be updated via Map()");
-
-    constexpr size_t Alignment = 4;
+    constexpr size_t Alignment = 64;
     // Source buffer offset must be multiple of 4 (18.4)
     auto TmpSpace = m_UploadHeap.Allocate(Size, Alignment);
+
     memcpy(TmpSpace.CPUAddress, pData, StaticCast<size_t>(Size));
+    size_t index_hash = std::hash<std::string_view>{}({reinterpret_cast<const char*>(pData), Size});
+    LOG_INFO_MESSAGE("Data hash: ", index_hash);
+    size_t index_hash2 = std::hash<std::string_view>{}({reinterpret_cast<const char*>(TmpSpace.CPUAddress), Size});
+    LOG_INFO_MESSAGE("Data hash2: ", index_hash2);
+
+    // Diligent::Uint64 cur_offset = 0;
+    // while (cur_offset < Size)
+    // {
+    //     Diligent::Uint64 remaining_size = Size - cur_offset;
+    //     Diligent::Uint64 cur_size       = std::min((int)32768, (int)remaining_size);
+    //     UpdateBufferRegion(pBuffVk, Offset + cur_offset, cur_size, TmpSpace.vkBuffer, TmpSpace.AlignedOffset + cur_offset, StateTransitionMode);
+    //     cur_offset += 32768;
+    // }
+
     UpdateBufferRegion(pBuffVk, Offset, Size, TmpSpace.vkBuffer, TmpSpace.AlignedOffset, StateTransitionMode);
+
+    LOG_INFO_MESSAGE("Dst Buff VK: ", pBuffVk, ", Dst Offset: ", Offset, ", Size: ", Size, ", Src Buff VK: ", TmpSpace.vkBuffer, ", Src Aligned Offset: ", TmpSpace.AlignedOffset);
     // The allocation will stay in the upload heap until the end of the frame at which point all upload
     // pages will be discarded
 }
@@ -2520,7 +2609,7 @@ void DeviceContextVkImpl::MapTextureSubresource(ITexture*                 pTextu
             // For non-compressed formats, BlockHeight is 1.
             (pMapRegion->MinZ * MipLevelAttribs.StorageHeight + pMapRegion->MinY) / FmtAttribs.BlockHeight * MipLevelAttribs.RowSize +
             // For non-compressed formats, BlockWidth is 1.
-            pMapRegion->MinX / FmtAttribs.BlockWidth * Uint64{FmtAttribs.GetElementSize()};
+            pMapRegion->MinX / FmtAttribs.BlockWidth* Uint64{FmtAttribs.GetElementSize()};
 
         MappedData.pData       = TextureVk.GetStagingDataCPUAddress() + MapStartOffset;
         MappedData.Stride      = MipLevelAttribs.RowSize;

@@ -418,7 +418,40 @@ VulkanInstance::VulkanInstance(const CreateInfo& CI) :
 
     VkInstanceCreateInfo InstanceCreateInfo{};
     InstanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    InstanceCreateInfo.pNext = nullptr; // Pointer to an extension-specific structure.
+
+    VkValidationFeaturesEXT validation_features{};
+    validation_features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+
+//    VkValidationFeatureEnableEXT validation_features_enabled = VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT;
+//    validation_features.enabledValidationFeatureCount = 0;
+//    validation_features.pEnabledValidationFeatures = &validation_features_enabled;
+
+//    const char* layer_name = "VK_LAYER_KHRONOS_validation";
+//
+//    const VkBool32 setting_validate_core = VK_TRUE;
+//    const VkBool32 setting_validate_sync = VK_TRUE;
+//    const VkBool32 setting_thread_safety = VK_TRUE;
+//    const char* setting_debug_action[] = {"VK_DBG_LAYER_ACTION_LOG_MSG"};
+//    const char* setting_report_flags[] = {"info", "warn", "perf", "error", "debug"};
+//    const VkBool32 setting_enable_message_limit = VK_TRUE;
+//    const int32_t setting_duplicate_message_limit = 3;
+//
+//    const VkLayerSetting settings[] = {
+//            {layer_name, "validate_core", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &setting_validate_core},
+//            {layer_name, "validate_sync", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &setting_validate_sync},
+//            {layer_name, "thread_safety", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &setting_thread_safety},
+//            {layer_name, "debug_action", VK_LAYER_SETTING_TYPE_STRING_EXT, 1, setting_debug_action},
+//            {layer_name, "report_flags", VK_LAYER_SETTING_TYPE_STRING_EXT, static_cast<uint32_t>(std::size(setting_report_flags)), setting_report_flags}
+//            {layer_name, "enable_message_limit", VK_LAYER_SETTING_TYPE_BOOL32_EXT, 1, &setting_enable_message_limit},
+//            {layer_name, "duplicate_message_limit", VK_LAYER_SETTING_TYPE_INT32_EXT, 1, &setting_duplicate_message_limit}};
+//
+//    const VkLayerSettingsCreateInfoEXT layer_settings_create_info = {
+//            VK_STRUCTURE_TYPE_LAYER_SETTINGS_CREATE_INFO_EXT, nullptr,
+//            static_cast<uint32_t>(sizeof(settings)), settings};
+
+
+    //InstanceCreateInfo.pNext = &layer_settings_create_info; // Pointer to an extension-specific structure.
+    InstanceCreateInfo.pNext = &validation_features;
     InstanceCreateInfo.flags = 0;
     if (UsePortabilityEnumeartion)
     {

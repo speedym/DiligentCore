@@ -77,6 +77,12 @@ DynamicBuffer::DynamicBuffer(IRenderDevice*                 pDevice,
     m_Desc.Name   = m_Name.c_str();
     m_PendingSize = m_Desc.Size;
     m_Desc.Size   = 0; // Current buffer size
+
+    // SPD
+    if (m_Desc.Usage == USAGE_UNIFIED) {
+        m_Desc.CPUAccessFlags = CPU_ACCESS_READ | CPU_ACCESS_WRITE;
+    }
+
     if (pDevice != nullptr && (m_PendingSize > 0 || m_Desc.Usage == USAGE_SPARSE))
     {
         InitBuffer(pDevice);
@@ -154,7 +160,8 @@ void DynamicBuffer::InitBuffer(IRenderDevice* pDevice)
     }
 
     // NB: m_Desc.Usage may be changed by CreateSparseBuffer()
-    if (m_Desc.Usage == USAGE_DEFAULT && m_PendingSize > 0)
+    // SPD
+    if ((m_Desc.Usage == USAGE_DEFAULT || m_Desc.Usage == USAGE_UNIFIED) && m_PendingSize > 0)
     {
         auto Desc = m_Desc;
         Desc.Size = m_PendingSize;

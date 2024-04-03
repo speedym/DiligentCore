@@ -91,6 +91,8 @@ VulkanUploadHeap::UploadPageInfo VulkanUploadHeap::CreateNewPage(VkDeviceSize Si
 
 VulkanUploadAllocation VulkanUploadHeap::Allocate(VkDeviceSize SizeInBytes, VkDeviceSize Alignment)
 {
+    LOG_INFO_MESSAGE("VulkanUploadHeap::Allocate, SizeInBytes: ", SizeInBytes, ", Alignment: ", Alignment);
+
     VERIFY(IsPowerOfTwo(Alignment), "Alignment (", Alignment, ") must be power of two");
 
     VulkanUploadAllocation Allocation;
@@ -133,6 +135,10 @@ VulkanUploadAllocation VulkanUploadHeap::Allocate(VkDeviceSize SizeInBytes, VkDe
     m_PeakAllocatedSize = std::max(m_CurrAllocatedSize, m_PeakAllocatedSize);
 
     VERIFY_EXPR((Allocation.AlignedOffset & (Alignment - 1)) == 0);
+    LOG_INFO_MESSAGE("VulkanUploadHeap::Allocate, Allocation vkBuffer: ", Allocation.vkBuffer,
+                     ", Allocation.CPUAddress: ", Allocation.CPUAddress,
+                     ", Allocation.Size: ", Allocation.Size,
+                     ", Allocation.AlignedOffset: ", Allocation.AlignedOffset);
     return Allocation;
 }
 
