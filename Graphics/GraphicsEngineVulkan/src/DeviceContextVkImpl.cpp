@@ -2043,7 +2043,7 @@ void DeviceContextVkImpl::UpdateBuffer(IBuffer*                       pBuffer,
 #define POWER_VR_DRIVER_BUG_WORKAROUND
 #ifdef POWER_VR_DRIVER_BUG_WORKAROUND
     constexpr Diligent::Uint64 k_power_vr_max_buffer_transfer_limit_bytes = 32768;
-    Diligent::Uint64 cur_offset = 0;
+    Diligent::Uint64           cur_offset                                 = 0;
     while (cur_offset < Size)
     {
         Diligent::Uint64 remaining_size = Size - cur_offset;
